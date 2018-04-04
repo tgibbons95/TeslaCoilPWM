@@ -115,8 +115,8 @@ int WhatToDo(){
 	int thisTask = g_thisTask;
 	int iRet = (prevTask == thisTask) ? -1: thisTask;
 	prevTask = thisTask;
-	//if(iRet != -1)
-		//printf("\n\nTASK = %d\n\n", iRet);
+	if(iRet != -1)
+		printf("\n\nTASK = %d\n\n", iRet);
 	return iRet;
 }
 
