@@ -105,7 +105,7 @@ void SoundPlayer::PlayNoteIndefinitely(int Note){
 }
 
 void SoundPlayer::SlightPause(){
-	usleep(500000);
+	usleep(250000);
 }
 
 void SoundPlayer::Error(const char* data){

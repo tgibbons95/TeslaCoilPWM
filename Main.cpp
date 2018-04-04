@@ -30,6 +30,7 @@ int WhatToDo();
 
 int g_thisTask = 2;
 sem_t TaskLock;
+sem_t ThreadLock;
 
 #define SPEAKER_GPIO_PIN_NO 29
 
@@ -59,6 +60,7 @@ int main(int argc, char* argv[]) {
 
 	// Initialize Task Lock
 	sem_init(&TaskLock, 0, 1);
+	sem_init(&ThreadLock, 0, 0);
 
 	// Initialize threads
 	pthread_t PlayThread;
@@ -66,22 +68,31 @@ int main(int argc, char* argv[]) {
 	pthread_create(&CommunicationThread, NULL, Communicate, NULL);
 	//pthread_create(&ReceivingThread, NULL, Receive, NULL);
 
-	int iWhatToDo;
+	int x;
 	while(1){
-		iWhatToDo = WhatToDo();
-		switch(iWhatToDo){
+		sem_wait(&TaskLock);
+		x = g_thisTask;
+		sem_post(&TaskLock);
+		switch(x){
 			case -1: /*DO NOTHING AND CONTINUE PLAYING*/ break;
-			case 1:
+			case 1: 
 			case 2:
 				g_pSong1->Pause();
 				g_pSong2->Pause();
+				pthread_join(PlayThread, NULL);
 				g_pSpeaker->SlightPause();
-				//printf("\nMain: %d",iWhatToDo);
-				pthread_create(&PlayThread, NULL, Play, (void*)(&iWhatToDo));
+				pthread_create(&PlayThread, NULL, Play, (void*)(&x));
+				sem_wait(&ThreadLock);
+				sem_wait(&TaskLock);
+				g_thisTask = -1;
+				sem_post(&TaskLock);
 				break;
 			default:	
 				g_pSong1->Pause();
 				g_pSong2->Pause();
+				sem_wait(&TaskLock);
+				g_thisTask = -1;
+				sem_post(&TaskLock);
 				break;
 		}
 	}
@@ -103,33 +114,21 @@ void* Communicate(void* data){
 	while(1){
 		//printf("Enter task: ");
 		scanf("%d",&iLocalVariable);
-		//sem_wait(&TaskLock);
+		sem_wait(&TaskLock);
 		g_thisTask = iLocalVariable;
-		//sem_post(&TaskLock);
+		sem_post(&TaskLock);
 	}
 }
 
 void* Play(void* data){
 	int iWhatToDo = *((int*)data);
-	//printf("\nPlay: %d",iWhatToDo);
+	sem_post(&ThreadLock);
+	//printf("\nPlay: %d\t%p",iWhatToDo, &iWhatToDo);
 	switch(iWhatToDo){
 		case 1:	g_pSong1->Play(g_pSpeaker); break;
 		case 2: g_pSong2->Play(g_pSpeaker); break;
 		default: g_pSong2->Play(g_pSpeaker); break;
 	}
 	return NULL;
-}
-
-int WhatToDo(){
-
-	//sem_wait(&TaskLock);
-	static int prevTask = -1;
-	int thisTask = g_thisTask;
-	int iRet = (prevTask == thisTask) ? -1: thisTask;
-	prevTask = thisTask;
-	//sem_post(&TaskLock);
-	if(iRet != -1)
-		printf("\n\nTASK = %d\n\n", iRet);
-	return iRet;
 }
 

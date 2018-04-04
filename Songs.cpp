@@ -11,9 +11,9 @@ Song::Song(int iSongSelection){
 	std::string currentString;
 	std::string filename;
 	switch(iSongSelection){
-		case 0:		filename = "MidiFiles/_HarryPotter.mid.txt"; 		break;
-		case 1:		filename = "MidiFiles/_Star_Wars_Theme.mid.txt";	break;
-		default: 	filename = "MidiFiles/_Star_Wars_Theme.mid.txt";	break;
+		case 0:		filename = "//home/pi/ECE4970/MidiFiles/_HarryPotter.mid.txt"; 		break;
+		case 1:		filename = "//home/pi/ECE4970/MidiFiles/_Star_Wars_Theme.mid.txt";	break;
+		default: 	filename = "//home/pi/ECE4970/MidiFiles/_Star_Wars_Theme.mid.txt";	break;
 	}
     read.open(filename.data(), std::fstream::in);
 	
