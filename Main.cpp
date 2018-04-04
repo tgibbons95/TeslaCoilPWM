@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
 
 // Macros
 #define SAFE_DELETE(x) if(x != NULL) delete x
@@ -20,13 +21,15 @@ WirelessCommunication* g_pCommunication;
 SoundPlayer* g_pSpeaker;
 
 // Global Song Object
-Song* g_pSong1 = new Song(0);
-Song* g_pSong2 = new Song(1);
+Song* g_pSong1;
+Song* g_pSong2;
 
 void* Play(void* data);
 void* Communicate(void* data);
 int WhatToDo();
+
 int g_thisTask = 2;
+sem_t TaskLock;
 
 #define SPEAKER_GPIO_PIN_NO 29
 
@@ -54,6 +57,9 @@ int main(int argc, char* argv[]) {
 	g_pCommunication = new WirelessCommunication(2050);
 	g_pSpeaker = new SoundPlayer(SPEAKER_GPIO_PIN_NO, bUseKernel);
 
+	// Initialize Task Lock
+	sem_init(&TaskLock, 0, 1);
+
 	// Initialize threads
 	pthread_t PlayThread;
 	pthread_t CommunicationThread;
@@ -70,6 +76,7 @@ int main(int argc, char* argv[]) {
 				g_pSong1->Pause();
 				g_pSong2->Pause();
 				g_pSpeaker->SlightPause();
+				//printf("\nMain: %d",iWhatToDo);
 				pthread_create(&PlayThread, NULL, Play, (void*)(&iWhatToDo));
 				break;
 			default:	
@@ -94,14 +101,17 @@ int main(int argc, char* argv[]) {
 void* Communicate(void* data){
 	int iLocalVariable = 0;
 	while(1){
-		printf("Enter task: ");
+		//printf("Enter task: ");
 		scanf("%d",&iLocalVariable);
+		//sem_wait(&TaskLock);
 		g_thisTask = iLocalVariable;
+		//sem_post(&TaskLock);
 	}
 }
 
 void* Play(void* data){
 	int iWhatToDo = *((int*)data);
+	//printf("\nPlay: %d",iWhatToDo);
 	switch(iWhatToDo){
 		case 1:	g_pSong1->Play(g_pSpeaker); break;
 		case 2: g_pSong2->Play(g_pSpeaker); break;
@@ -111,10 +121,13 @@ void* Play(void* data){
 }
 
 int WhatToDo(){
+
+	//sem_wait(&TaskLock);
 	static int prevTask = -1;
 	int thisTask = g_thisTask;
 	int iRet = (prevTask == thisTask) ? -1: thisTask;
 	prevTask = thisTask;
+	//sem_post(&TaskLock);
 	if(iRet != -1)
 		printf("\n\nTASK = %d\n\n", iRet);
 	return iRet;
