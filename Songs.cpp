@@ -37,7 +37,12 @@ Song::Song(int iSongSelection){
 	}
 	std::cout << std::endl;
     read.close();
+	bNoteOrSong = false;
+}
 
+Song::Song(std::string Note){
+	thisNote = Note;
+	bNoteOrSong = true;
 }
 
 Song::~Song(){
@@ -48,15 +53,29 @@ void Song::Play(SoundPlayer* g_pSpeaker){
 	int iSongLength = SongLine.size();
 	bPlayingOrPaused = true;
 	// Play line by line
-	for(int i = 0; i < iSongLength; i++) {
-		// Check if the song was paused in different thread
-		if(bPlayingOrPaused){			
-			g_pSpeaker->PlayNote(
-				ConvertCharsToNoteFrequency(SongLine[i].Note,0), 
-				SongLine[i].iDuration*NUMBER_OF_BEATS);
+	if(bNoteOrSong){
+		while(1){
+			// Check if the note was paused in different thread
+			if(bPlayingOrPaused){			
+				g_pSpeaker->PlayNote(
+					ConvertCharsToNoteFrequency(thisNote,0), 
+					1*NUMBER_OF_BEATS, false);
+			}
+			else
+				break;
 		}
-		else
-			break;
+	}
+	else{
+		for(int i = 0; i < iSongLength; i++) {
+			// Check if the song was paused in different thread
+			if(bPlayingOrPaused){			
+				g_pSpeaker->PlayNote(
+					ConvertCharsToNoteFrequency(SongLine[i].Note,0), 
+					SongLine[i].iDuration*NUMBER_OF_BEATS);
+			}
+			else
+				break;
+		}
 	}
 	
 }

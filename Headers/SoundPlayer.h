@@ -7,7 +7,7 @@ class SoundPlayer{
 		SoundPlayer(int iSpeakerGpioPin, bool bUseKernel);
 		~SoundPlayer();
 		void PlayNoteIndefinitely( int Note);
-		void PlayNote(unsigned int Note, int iAmountOfTimesToPlay);
+		void PlayNote(unsigned int Note, int iAmountOfTimesToPlay, bool bUseDelay = true);
 		void SlightPause();
 	protected:
 	

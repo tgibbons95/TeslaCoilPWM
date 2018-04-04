@@ -23,6 +23,7 @@ SoundPlayer* g_pSpeaker;
 // Global Song Object
 Song* g_pSong1;
 Song* g_pSong2;
+Song* g_pNote;
 
 void* Play(void* data);
 void* Communicate(void* data);
@@ -47,6 +48,7 @@ int main(int argc, char* argv[]) {
 	// Load Songs for faster speed
 	g_pSong1 = new Song(0);
 	g_pSong2 = new Song(1);
+	g_pNote = new Song("C5");
 
 	bool bUseKernel = true;
 	if(argc > 1){
@@ -55,7 +57,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Initialize global variables
-	g_pCommunication = new WirelessCommunication(2050);
+	//g_pCommunication = new WirelessCommunication(2050);
 	g_pSpeaker = new SoundPlayer(SPEAKER_GPIO_PIN_NO, bUseKernel);
 
 	// Initialize Task Lock
@@ -77,8 +79,10 @@ int main(int argc, char* argv[]) {
 			case -1: /*DO NOTHING AND CONTINUE PLAYING*/ break;
 			case 1: 
 			case 2:
+			case 3:
 				g_pSong1->Pause();
 				g_pSong2->Pause();
+				g_pNote->Pause();
 				pthread_join(PlayThread, NULL);
 				g_pSpeaker->SlightPause();
 				pthread_create(&PlayThread, NULL, Play, (void*)(&x));
@@ -90,6 +94,7 @@ int main(int argc, char* argv[]) {
 			default:	
 				g_pSong1->Pause();
 				g_pSong2->Pause();
+				g_pNote->Pause();
 				sem_wait(&TaskLock);
 				g_thisTask = -1;
 				sem_post(&TaskLock);
@@ -101,10 +106,11 @@ int main(int argc, char* argv[]) {
 	//pthread_join(ReceivingThread, NULL);
 	
 	// Free allocated space
-	SAFE_DELETE(g_pCommunication);
+	//SAFE_DELETE(g_pCommunication);
 	SAFE_DELETE(g_pSpeaker);
 	SAFE_DELETE(g_pSong1);
 	SAFE_DELETE(g_pSong2);
+	SAFE_DELETE(g_pNote);
 
 	return 0;
 }
@@ -127,6 +133,7 @@ void* Play(void* data){
 	switch(iWhatToDo){
 		case 1:	g_pSong1->Play(g_pSpeaker); break;
 		case 2: g_pSong2->Play(g_pSpeaker); break;
+		case 3: g_pNote->Play(g_pSpeaker); break;
 		default: g_pSong2->Play(g_pSpeaker); break;
 	}
 	return NULL;

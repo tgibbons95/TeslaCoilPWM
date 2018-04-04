@@ -64,7 +64,7 @@ void SoundPlayer::SetupConnections(){
 }
 
 // Play note set amount of times
-void SoundPlayer::PlayNote(unsigned int Note, int iAmountOfTimesToPlay){
+void SoundPlayer::PlayNote(unsigned int Note, int iAmountOfTimesToPlay, bool bUseDelay /*=true*/){
 
 	if(!this->bUseKernel){
 		for(int i = 0; i < iAmountOfTimesToPlay; i++){
@@ -88,7 +88,8 @@ void SoundPlayer::PlayNote(unsigned int Note, int iAmountOfTimesToPlay){
 		write(cdev_id, buffer2, sizeof(buffer2));
 		usleep(Note * iAmountOfTimesToPlay);
 	}
-	usleep(250000);
+	if(bUseDelay)
+		usleep(250000);
 }
 
 // Play note indefinitely
