@@ -4,10 +4,6 @@
 #include <vector>
 #include <iostream>
 
-void PlayTwinkleTwinkleLittleStar(SoundPlayer* g_pSpeaker);
-void PlayStarWars(SoundPlayer* g_pSpeaker);
-void PlayHarryPotter(SoundPlayer* g_pSpeaker);
-
 typedef struct _NoteDurationPair {
 	std::string Note;
 	int iDuration;

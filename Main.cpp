@@ -40,6 +40,7 @@ int g_thisTask = 2;
 
 int main(int argc, char* argv[]) {
 
+	// Load Songs for faster speed
 	g_pSong1 = new Song(0);
 	g_pSong2 = new Song(1);
 
@@ -114,8 +115,8 @@ int WhatToDo(){
 	int thisTask = g_thisTask;
 	int iRet = (prevTask == thisTask) ? -1: thisTask;
 	prevTask = thisTask;
-	if(iRet != -1)
-		printf("\n\nTASK = %d\n\n", iRet);
+	//if(iRet != -1)
+		//printf("\n\nTASK = %d\n\n", iRet);
 	return iRet;
 }
 
