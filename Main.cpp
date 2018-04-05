@@ -117,8 +117,18 @@ int main(int argc, char* argv[]) {
 
 void* Communicate(void* data){
 	int iLocalVariable = 0;
+	int iTemp = 0;
+	static int iPreviousTask = -1;
 	while(1){
 		//printf("Enter task: ");
+		iTemp = GetTaskFromDataBase();
+		if(iTemp == iPreviousTask)
+			iLocalVariable = -1;
+		else
+			iLocalVariable = iTemp;
+
+		iPreviousTask = iTemp;
+
 		scanf("%d",&iLocalVariable);
 		sem_wait(&TaskLock);
 		g_thisTask = iLocalVariable;
