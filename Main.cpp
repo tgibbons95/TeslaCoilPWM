@@ -43,11 +43,11 @@ string webFreq;
 string piFreq;
 int webActivity;
 //int webActivityOld;
-int piActivity;
+int piActivity = 1;
 string sqlStart = "mysql -h capstonedatabase.cbjo3wuam9ez.us-west-2.rds.amazonaws.com -u dbsuperadmin -p1Rc8TAv39W epiz_21734938_controller -e";
 string piIP = "10.50.1.23";
 
-int g_thisTask = 2;
+int g_thisTask = 4;
 sem_t TaskLock;
 sem_t ThreadLock;
 
@@ -96,6 +96,8 @@ int main(int argc, char* argv[]) {
 		switch(x){
 			case -1: /*DO NOTHING AND CONTINUE PLAYING*/ break;
 			case 1: 
+				SAFE_DELETE(g_pNote);
+				g_pNote = new Song(piFreq);
 			case 2:
 			case 3:
 				g_pSong1->Pause();
@@ -139,21 +141,23 @@ void* Communicate(void* data){
 	static int iPreviousTask = -1;
 	while(1){
 		//printf("Enter task: ");
-		usleep(5000000);		
+		//std::cout << "Pi Activity: " << piActivity << std::endl;	
 		getSqlCommand();
-		iTemp = webActivity;
+		iTemp = piActivity;
 		if(iTemp == iPreviousTask)
 			iLocalVariable = -1;
-		else
+		else {
 			iLocalVariable = iTemp;
-
+			//std::cout << "Local Variable: " << iLocalVariable << std::endl;
+		}
 		iPreviousTask = iTemp;
 
-		scanf("%d",&iLocalVariable);
+		//scanf("%d",&iLocalVariable);
 		sem_wait(&TaskLock);
 		g_thisTask = iLocalVariable;
 		sem_post(&TaskLock);
 		postSqlCommand();
+		usleep(3000000);
 	}
 }
 
@@ -162,9 +166,9 @@ void* Play(void* data){
 	sem_post(&ThreadLock);
 	//printf("\nPlay: %d\t%p",iWhatToDo, &iWhatToDo);
 	switch(iWhatToDo){
-		case 1:	g_pSong1->Play(g_pSpeaker); break;
-		case 2: g_pSong2->Play(g_pSpeaker); break;
-		case 3: g_pNote->Play(g_pSpeaker); break;
+		case 1:	g_pNote->Play(g_pSpeaker); break;
+		case 2: g_pSong1->Play(g_pSpeaker); break;
+		case 3: g_pSong2->Play(g_pSpeaker); break;
 		default: g_pSong2->Play(g_pSpeaker); break;
 	}
 	return NULL;
@@ -172,13 +176,13 @@ void* Play(void* data){
 
 void postSqlCommand(){
 
-ostringstream convert;
-convert << piActivity;
-string tempPiActivity = convert.str();
-	//string sqlUpdate =  "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+piActivity+"', PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
-string sqlUpdate = "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+tempPiActivity+"', PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
-cout<<sqlUpdate<<"\n";
-runCommand(sqlUpdate);
+	ostringstream convert;
+	convert << piActivity;
+	string tempPiActivity = convert.str();
+	//string sqlUpdate =  "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+piActivity+"', 	PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
+	string sqlUpdate = "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+tempPiActivity+"', 	PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
+	//cout<<sqlUpdate<<"\n";
+	runCommand(sqlUpdate);
 
 }
 
