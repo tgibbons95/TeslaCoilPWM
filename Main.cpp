@@ -10,6 +10,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <semaphore.h>
+#include <string>
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
 
 // Macros
 #define SAFE_DELETE(x) if(x != NULL) delete x
@@ -28,6 +34,18 @@ Song* g_pNote;
 void* Play(void* data);
 void* Communicate(void* data);
 int WhatToDo();
+void getSqlCommand();
+void postSqlCommand();
+void runCommand(string);
+
+string webFreq;
+//string webFreqOld;
+string piFreq;
+int webActivity;
+//int webActivityOld;
+int piActivity;
+string sqlStart = "mysql -h capstonedatabase.cbjo3wuam9ez.us-west-2.rds.amazonaws.com -u dbsuperadmin -p1Rc8TAv39W epiz_21734938_controller -e";
+string piIP = "10.50.1.23";
 
 int g_thisTask = 2;
 sem_t TaskLock;
@@ -121,7 +139,9 @@ void* Communicate(void* data){
 	static int iPreviousTask = -1;
 	while(1){
 		//printf("Enter task: ");
-		iTemp = GetTaskFromDataBase();
+		usleep(5000000);		
+		getSqlCommand();
+		iTemp = webActivity;
 		if(iTemp == iPreviousTask)
 			iLocalVariable = -1;
 		else
@@ -133,6 +153,7 @@ void* Communicate(void* data){
 		sem_wait(&TaskLock);
 		g_thisTask = iLocalVariable;
 		sem_post(&TaskLock);
+		postSqlCommand();
 	}
 }
 
@@ -147,5 +168,59 @@ void* Play(void* data){
 		default: g_pSong2->Play(g_pSpeaker); break;
 	}
 	return NULL;
+}
+
+void postSqlCommand(){
+
+ostringstream convert;
+convert << piActivity;
+string tempPiActivity = convert.str();
+	//string sqlUpdate =  "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+piActivity+"', PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
+string sqlUpdate = "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+tempPiActivity+"', PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
+cout<<sqlUpdate<<"\n";
+runCommand(sqlUpdate);
+
+}
+
+void getSqlCommand(){
+	int i=0;
+	string str[100];
+	string sqlGet = "\"SELECT WEB_FREQ, WEB_ACTIVITY FROM CoilCommands WHERE PI_IP = '"+piIP+"'\" > output.txt";
+	//cout<<sqlGet<<"\n";
+	runCommand(sqlGet);
+	fstream filestr;
+  	filestr.open ("output.txt");
+	if (filestr.is_open())
+  	{
+		while (!filestr.eof()){    		
+		filestr >> str[i];
+		//cout<<str[i]<<"\n";
+		i++;
+		}
+		filestr.close();
+  	}
+ 	else
+ 	{
+    		cout << "Error opening file\n";
+  	}
+	//cout<<i<<"\n";
+	if(i==5){
+		piFreq=str[2];
+		piActivity=atoi(str[3].c_str());
+		//cout<<"New piFreq = "<<piFreq<<" New piActivity = "<<piActivity<<"\n";
+	}
+
+return;
+}
+
+
+void runCommand(string sqlString){
+	string command = sqlStart + sqlString;
+	const char* sqlCommand = command.c_str();
+	//cout<<"\n\n\n";
+	//cout<<sqlCommand;
+	//cout<<"\n\n\n";
+	system(sqlCommand);
+	return;
 }
 
