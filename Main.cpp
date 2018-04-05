@@ -139,18 +139,20 @@ void* Communicate(void* data){
 	int iLocalVariable = 0;
 	int iTemp = 0;
 	static int iPreviousTask = -1;
+	static string szPreviousFrequency = "";
 	while(1){
 		//printf("Enter task: ");
 		//std::cout << "Pi Activity: " << piActivity << std::endl;	
 		getSqlCommand();
 		iTemp = piActivity;
-		if(iTemp == iPreviousTask)
+		if((iTemp == iPreviousTask) && (szPreviousFrequency.compare(piFreq) == 0))
 			iLocalVariable = -1;
 		else {
 			iLocalVariable = iTemp;
 			//std::cout << "Local Variable: " << iLocalVariable << std::endl;
 		}
 		iPreviousTask = iTemp;
+		szPreviousFrequency = piFreq;
 
 		//scanf("%d",&iLocalVariable);
 		sem_wait(&TaskLock);
