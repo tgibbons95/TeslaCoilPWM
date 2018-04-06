@@ -14,6 +14,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <ctime>
+
 
 using namespace std;
 
@@ -178,13 +180,23 @@ void* Play(void* data){
 
 void postSqlCommand(){
 
-	ostringstream convert;
-	convert << piActivity;
-	string tempPiActivity = convert.str();
-	//string sqlUpdate =  "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+piActivity+"', 	PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
-	string sqlUpdate = "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+tempPiActivity+"', 	PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
-	//cout<<sqlUpdate<<"\n";
-	runCommand(sqlUpdate);
+ostringstream convert;
+convert << piActivity;
+string tempPiActivity = convert.str();
+
+std::time_t t = std::time(0);   // get time now
+std::tm* timeptr = std::localtime(&t);
+static char result[26];
+sprintf(result, "%d-%d-%d %.2d:%.2d:%.2d",1900 + timeptr->tm_year,timeptr->tm_mon,timeptr->tm_mday, timeptr->tm_hour,timeptr->tm_min, timeptr->tm_sec);
+ostringstream convert1;
+convert1 << result;
+string tempResult = convert1.str();
+
+
+	//string sqlUpdate =  "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+piActivity+"', PI_FREQ='"+piFreq+"' where PI_IP = '"+piIP+"'\"";
+string sqlUpdate = "\"UPDATE CoilCommands SET PI_ACTIVITY = '"+tempPiActivity+"', PI_FREQ='"+piFreq+"', PI_REFRESH_TIME='"+tempResult+"' where PI_IP = '"+piIP+"'\"";
+//cout<<sqlUpdate<<"\n";
+runCommand(sqlUpdate);
 
 }
 
