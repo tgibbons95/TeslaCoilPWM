@@ -44,7 +44,7 @@ string piFreq;
 int webActivity;
 //int webActivityOld;
 int piActivity = 1;
-string sqlStart = "mysql -h capstonedatabase.cbjo3wuam9ez.us-west-2.rds.amazonaws.com -u dbsuperadmin -p1Rc8TAv39W epiz_21734938_controller -e";
+string sqlStart = "/usr/bin/mysql -h capstonedatabase.cbjo3wuam9ez.us-west-2.rds.amazonaws.com -u dbsuperadmin -p1Rc8TAv39W epiz_21734938_controller -e";
 string piIP = "10.50.1.23";
 
 int g_thisTask = 4;
@@ -191,11 +191,11 @@ void postSqlCommand(){
 void getSqlCommand(){
 	int i=0;
 	string str[100];
-	string sqlGet = "\"SELECT WEB_FREQ, WEB_ACTIVITY FROM CoilCommands WHERE PI_IP = '"+piIP+"'\" > output.txt";
+	string sqlGet = "\"SELECT WEB_FREQ, WEB_ACTIVITY FROM CoilCommands WHERE PI_IP = '"+piIP+"'\" > /home/pi/ECE4970/output.txt";
 	//cout<<sqlGet<<"\n";
 	runCommand(sqlGet);
 	fstream filestr;
-  	filestr.open ("output.txt");
+  	filestr.open ("/home/pi/ECE4970/output.txt");
 	if (filestr.is_open())
   	{
 		while (!filestr.eof()){    		
